@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Product Table</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: 'get_products.php',
+                dataType: 'json',
+                success: function (data) {
+                    var html = '';
+                    $.each(data, function (index, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.ProductID + '</td>';
+                        html += '<td>' + item.ProductName + '</td>';
+                        html += '<td>' + item.Description + '</td>';
+                        html += '<td>' + item.Price + '</td>';
+                        html += '<td>' + item.QuantityInStock + '</td>';
+                        html += '<td>' + item.Category + '</td>';
+                        html += '<td>' + item.Manufacturer + '</td>';
+                        html += '<td>' + item.SKU + '</td>';
+                        html += '<td><button class="edit-product">Edit</button></td>';
+                        html += '<td><button class="delete-product">Delete</button></td>'
+                        html += '</tr>';
+                    });
+                    $('#product-table tbody').append(html);
+                }
+            });
+
+
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Product Table</h1>
+    <table id="product-table">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Product Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Quantity in Stock</th>
+                <th>Category</th>
+                <th>Manufacturer</th>
+                <th>SKU</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be loaded dynamically here -->
+            <tr id="new-product">
+                <td></td>
+                <td><input type="text" name="product-name"></td>
+                <td><input type="text" name="description"></td>
+                <td><input type="text" name="price"></td>
+                <td><input type="text" name="quantity-in-stock"></td>
+                <td><input type="text" name="category"></td>
+                <td><input type="text" name="manufacturer"></td>
+                <td><input type="text" name="sku"></td>
+                <td><button id="add-product">Add</button></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+<script>
+    $(document).ready(function () {
+        // Add new product
+        $('#add-product').click(function () {
+            alert('hi add');
+
+                 var productName = $('input[name="product-name"]').val();
+                 var description = $('input[name="description"]').val();
+                 var price = $('input[name="price"]').val();
+                 var quantityInStock = $('input[name="quantity-in-stock"]').val();
+                 var category = $('input[name="category"]').val();
+                 var manufacturer = $('input[name="manufacturer"]').val();
+                 var sku = $('input[name="sku"]').val();
+    
+                 $.ajax({
+                     url: 'add_product.php',
+                     type: 'POST',
+                     data: {
+                         product_name: productName,
+                         description: description,
+                         price: price,
+                         quantity_in_stock: quantityInStock,
+                         category: category,
+                         manufacturer: manufacturer,
+                         sku: sku
+                     },
+                     success: function (response) {
+                         if (response == 'success') {
+                             alert('Success adding product');
+                             location.reload();
+                         } else {
+                             alert('Error adding product');
+                         }
+                     }
+                 });
+        });
+
+        // Edit product
+        $(document).on('click', '.edit-product', function () {
+
+
+            var row = $(this).closest('tr');
+            var productId = row.find('td:eq(0)').text();
+            var productName = row.find('td:eq(1)').text();
+            var description = row.find('td:eq(2)').text();
+            var price = row.find('td:eq(3)').text();
+            var quantityInStock = row.find('td:eq(4)').text();
+            var category = row.find('td:eq(5)').text();
+            var manufacturer = row.find('td:eq(6)').text();
+            var sku = row.find('td:eq(7)').text();
+
+            row.find('td:eq(1)').html('<input type="text" name="product-name" value="' + productName +
+                '">');
+            row.find('td:eq(2)').html('<input type="text" name="description" value="' + description + '">');
+            row.find('td:eq(3)').html('<input type="text" name="price" value="' + price + '">');
+            row.find('td:eq(4)').html('<input type="text" name="quantity-in-stock" value="' +
+                quantityInStock + '">');
+            row.find('td:eq(5)').html('<input type="text" name="category" value="' + category + '">');
+            row.find('td:eq(6)').html('<input type="text" name="manufacturer" value="' + manufacturer +
+                '">');
+            row.find('td:eq(7)').html('<input type="text" name="sku" value="' + sku + '">');
+            row.find('.edit-product').hide();
+            row.find('.delete-product').hide();
+            row.append('<td><button class="save-product">Save</button></td>');
+        });
+
+
+        // Save edited product
+        $(document).on('click', '.save-product', function () {
+            var row = $(this).closest('tr');
+            var productId = row.find('td:eq(0)').text();
+            var productName = row.find('input[name="product-name"]').val();
+            var description = row.find('input[name="description"]').val();
+            var price = row.find('input[name="price"]').val();
+            var quantityInStock = row.find('input[name="quantity-in-stock"]').val();
+            var category = row.find('input[name="category"]').val();
+            var manufacturer = row.find('input[name="manufacturer"]').val();
+            var sku = row.find('input[name="sku"]').val();
+
+            $.ajax({
+                url: 'edit_product.php',
+                type: 'POST',
+                data: {
+                    product_id: productId,
+                    product_name: productName,
+                    description: description,
+                    price: price,
+                    quantity_in_stock: quantityInStock,
+                    category: category,
+                    manufacturer: manufacturer,
+                    sku: sku
+                },
+                success: function (response) {
+                    if (response == 'success') {
+                        alert('success saving product');
+                        row.find('td:eq(1)').text(productName);
+                        row.find('td:eq(2)').text(description);
+                        row.find('td:eq(3)').text(price);
+                        row.find('td:eq(4)').text(quantityInStock);
+                        row.find('td:eq(5)').text(category);
+                        row.find('td:eq(6)').text(manufacturer);
+                        row.find('td:eq(7)').text(sku);
+                        row.find('.edit-product').show();
+                        row.find('.delete-product').show();
+                        row.find('.save-product').remove();
+                    } else {
+                        alert('Error saving product');
+                    }
+                }
+            });
+        });
+
+        // Delete product
+        $(document).on('click', '.delete-product', function () {
+            var row = $(this).closest('tr');
+            var productId = row.find('td:eq(0)').text();
+           // alert(productId);
+
+            if (confirm('Are you sure you want to delete this product?')) {
+                $.ajax({
+                    url: 'delete_product.php',
+                    type: 'POST',
+                    data: { product_id: productId },
+                    success: function (response) {
+                        if (response == 'success') {
+                            alert('success deleting product');
+                            row.remove();
+                        } else {
+                            alert('Error deleting product');
+                        }
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+
+</html>
